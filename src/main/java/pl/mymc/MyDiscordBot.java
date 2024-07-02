@@ -11,7 +11,7 @@ import javax.security.auth.login.LoginException;
 public class MyDiscordBot extends ListenerAdapter {
     public static void main(String[] args) throws LoginException {
 
-        String token = "MTI1NzMyNDcwNzAzMjg1ODc4MQ.GXqFsY.AuOj1swDyycI9ZhY1DnA7wtYPdp60ZyrAU9has"; // token Domiego MTI1Nzc1MTE1NTQzMDI2NDk0NA.GPMiEC.GrxP1Lip7NyhLnPhYIktd5O7hPT7U2UuZJPMIc
+        String token = "token";
         JDABuilder.createDefault(token)
                 .addEventListeners(new MyDiscordBot())
                 .enableIntents(GatewayIntent.MESSAGE_CONTENT)
