@@ -17,7 +17,6 @@ public class MyDiscordBot extends ListenerAdapter {
                 .enableIntents(GatewayIntent.MESSAGE_CONTENT)
                 .build();
     }
-
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
         try {
