@@ -68,6 +68,7 @@ public class MyDiscordBot extends ListenerAdapter {
                 if (success) {
                     event.getChannel().sendMessage("JAR file updated and server restarted successfully.").queue(this::deleteMessageAfterDelayIfInChannel
                     );
+                    System.exit(0);
                 } else {
                     event.getChannel().sendMessage("Failed to update JAR file.").queue(this::deleteMessageAfterDelayIfInChannel
                     );

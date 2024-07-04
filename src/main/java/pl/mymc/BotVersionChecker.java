@@ -33,7 +33,13 @@ public class BotVersionChecker {
 
             logger.warning("Found newer version of " + botName + ": " + tag.getTag());
             if (autoDownloadUpdates) {
-                File newJar = new File( botName + ".jar");
+                File oldJar = new File(botName + ".jar");
+                File backupJar = new File("_" + botName + ".jar");
+                if (oldJar.exists()) {
+                    oldJar.renameTo(backupJar);
+                }
+
+                File newJar = new File(botName + ".jar");
                 try {
                     String jarUrl = "https://github.com/WieszczY85/" + botName + "/releases/download/" + tag.getTag() + "/" + botName + "-" + tag.getTag() + ".jar";
                     URL website = new URL(jarUrl);
@@ -43,20 +49,29 @@ public class BotVersionChecker {
                     fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
                     fos.close();
                     rbc.close();
-                    File oldJar = new File( botName + ".jar");
-                    if (oldJar.exists()) {
-                        oldJar.delete();
-                    }
 
                     logger.info("Starting to download the bot...");
                     logger.info("Downloaded and installed the latest version, which will be used after the next server restart.");
+
+                    // Delete the backup file if the update was successful
+                    if (backupJar.exists()) {
+                        backupJar.delete();
+                    }
                 } catch (IOException e) {
                     logger.severe("Failed to download the new version: " + e.getMessage());
+
+                    // Delete the new file and restore the old file if the update failed
+                    if (newJar.exists()) {
+                        newJar.delete();
+                    }
+                    if (backupJar.exists()) {
+                        backupJar.renameTo(oldJar);
+                    }
                 }
-            }else{
+            } else {
                 logger.warning("You can download the latest version from: " + release.getPageUrl());
             }
-        }else{
+        } else {
             logger.info("You already have the latest version of " + botName + ": " + currentVersion);
         }
     }
