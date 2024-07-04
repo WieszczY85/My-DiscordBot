@@ -1,6 +1,5 @@
 package pl.mymc;
 
-import com.sun.tools.javac.Main;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Message;
@@ -10,14 +9,15 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 public class MyDiscordBot extends ListenerAdapter {
-    private static final String CHANNEL_ID = "1257994853024010351"; // Replace with your channel ID
+    private static final String CHANNEL_ID = "1234567890"; // Replace with your channel ID
+    private static final String token = "token";
 
     public static void main(String[] args) {
-        String token = "token";
         JDABuilder.createDefault(token)
                 .addEventListeners(new MyDiscordBot())
                 .enableIntents(GatewayIntent.MESSAGE_CONTENT)
@@ -124,27 +124,27 @@ public class MyDiscordBot extends ListenerAdapter {
 
     // Metoda aktualizująca plik JAR za pomocą biblioteki GitCheck która załatwie wiele rzeczy zamiast sie męczyć z cholernym kodem
     private boolean updateBot() {
-        Properties prop = new Properties();
-        InputStream pomInput = Main.class.getResourceAsStream("/META-INF/maven/pl.mymc/My-DiscordBot/pom.properties");
-        System.out.println(pomInput);
+        URL pomUrl = Thread.currentThread().getContextClassLoader().getResource("META-INF/maven/pl.mymc/My-DiscordBot/pom.properties");
+        //Debug (można usunąć) System.out.println(pomUrl);
 
-        try {
-            prop.load(pomInput);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        if (pomUrl != null) {
+            Properties prop = new Properties();
+            try (InputStream pomInput = pomUrl.openStream()) {
+                prop.load(pomInput);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
-        String botName = prop.getProperty("artifactId");
-        String currentVersion = prop.getProperty("version");
+            String botName = prop.getProperty("artifactId");
+            String currentVersion = prop.getProperty("version");
 
-        boolean checkForUpdates = true;
-        boolean autoDownloadUpdates = true;
-        try {
+            // Replace with your checkForUpdates and autoDownloadUpdates values
+            boolean checkForUpdates = true;
+            boolean autoDownloadUpdates = true;
+
             BotVersionChecker.checkVersion(botName, currentVersion, checkForUpdates, autoDownloadUpdates);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+            return true;
         }
-        return checkForUpdates;
+        return false;
     }
 }
