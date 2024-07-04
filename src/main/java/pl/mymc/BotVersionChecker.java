@@ -57,6 +57,7 @@ public class BotVersionChecker {
                     if (backupJar.exists()) {
                         backupJar.delete();
                     }
+                    System.exit(0);
                 } catch (IOException e) {
                     logger.severe("Failed to download the new version: " + e.getMessage());
 
