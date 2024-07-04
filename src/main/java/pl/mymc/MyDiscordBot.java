@@ -8,7 +8,6 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 
-import javax.security.auth.login.LoginException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -17,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 public class MyDiscordBot extends ListenerAdapter {
     private static final String CHANNEL_ID = "1257994853024010351"; // Replace with your channel ID
 
-    public static void main(String[] args) throws LoginException {
+    public static void main(String[] args) {
         String token = "token";
         JDABuilder.createDefault(token)
                 .addEventListeners(new MyDiscordBot())
@@ -52,54 +51,51 @@ public class MyDiscordBot extends ListenerAdapter {
         // Sprawdzenie uprawnień administratora
         if (!hasAdministratorPermission(event)) {
             event.getChannel().sendMessage("Nie masz uprawnień do używania tej komendy.").queue(
-                    sentMessage -> deleteMessageAfterDelayIfInChannel(sentMessage)
+                    this::deleteMessageAfterDelayIfInChannel
             );
             return;
         }
 
         // Obsługa komendy !ping
-        if (content.equals("!ping")) {
-            event.getChannel().sendMessage("pongggg").queue(sentMessage ->
-                    deleteMessageAfterDelayIfInChannel(sentMessage)
+        switch (content) {
+            case "!ping" -> event.getChannel().sendMessage("pongggg").queue(this::deleteMessageAfterDelayIfInChannel
             );
-        }
 
-        // Obsługa komendy !update
-        else if (content.equals("!update")) {
-            boolean success = updateBot();
-            if (success) {
-                event.getChannel().sendMessage("JAR file updated and server restarted successfully.").queue(sentMessage ->
-                        deleteMessageAfterDelayIfInChannel(sentMessage)
-                );
-            } else {
-                event.getChannel().sendMessage("Failed to update JAR file.").queue(sentMessage ->
-                        deleteMessageAfterDelayIfInChannel(sentMessage)
-                );
+
+            // Obsługa komendy !update
+            case "!update" -> {
+                boolean success = updateBot();
+                if (success) {
+                    event.getChannel().sendMessage("JAR file updated and server restarted successfully.").queue(this::deleteMessageAfterDelayIfInChannel
+                    );
+                } else {
+                    event.getChannel().sendMessage("Failed to update JAR file.").queue(this::deleteMessageAfterDelayIfInChannel
+                    );
+                }
             }
-        }
 
-        // Obsługa komendy !exit
-        else if (content.equals("!exit")) {
-            event.getChannel().sendMessage("Shutting down the bot...").queue(sentMessage ->
-                    deleteMessageAfterDelayIfInChannel(sentMessage)
-            );
-            System.exit(0); // Wyjście z aplikacji
-        }
+            // Obsługa komendy !exit
+            case "!exit" -> {
+                event.getChannel().sendMessage("Shutting down the bot...").queue(this::deleteMessageAfterDelayIfInChannel
+                );
+                System.exit(0); // Wyjście z aplikacji
+            }
 
-        // Obsługa komendy !komendy
-        else if(content.equals("!komendy")) {
-            sendCommandList(event);
+
+            // Obsługa komendy !komendy
+            case "!komendy" -> sendCommandList(event);
         }
     }
 
     // Metoda wysyłająca listę komend
     private void sendCommandList(MessageReceivedEvent event) {
-        StringBuilder builder = new StringBuilder();
-        builder.append("**Lista komend:**\n");
-        builder.append("!ping - Wysyła wiadomość 'pongggg'.\n");
-        builder.append("!update - Aktualizuje plik JAR.\n");
-        builder.append("!exit - Wyłącza bota.\n");
-        event.getChannel().sendMessage(builder.toString()).queue(
+        String builder = """
+                **Lista komend:**
+                !ping - Wysyła wiadomość 'pongggg'.
+                !update - Aktualizuje plik JAR.
+                !exit - Wyłącza bota.
+                """;
+        event.getChannel().sendMessage(builder).queue(
                 sentMessage -> deleteMessageAfterDelayIfInChannel(sentMessage, 30)
         );
     }
@@ -130,6 +126,7 @@ public class MyDiscordBot extends ListenerAdapter {
     private boolean updateBot() {
         Properties prop = new Properties();
         InputStream pomInput = Main.class.getResourceAsStream("/META-INF/maven/pl.mymc/My-DiscordBot/pom.properties");
+        System.out.println(pomInput);
 
         try {
             prop.load(pomInput);

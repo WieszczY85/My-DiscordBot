@@ -33,7 +33,7 @@ public class BotVersionChecker {
 
             logger.warning("Found newer version of " + botName + ": " + tag.getTag());
             if (autoDownloadUpdates) {
-                File newJar = new File( botName + "-" + tag.getTag() + ".jar");
+                File newJar = new File( botName + ".jar");
                 try {
                     String jarUrl = "https://github.com/WieszczY85/" + botName + "/releases/download/" + tag.getTag() + "/" + botName + "-" + tag.getTag() + ".jar";
                     URL website = new URL(jarUrl);
@@ -43,7 +43,7 @@ public class BotVersionChecker {
                     fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
                     fos.close();
                     rbc.close();
-                    File oldJar = new File( botName + "-" + currentVersion + ".jar");
+                    File oldJar = new File( botName + ".jar");
                     if (oldJar.exists()) {
                         oldJar.delete();
                     }
