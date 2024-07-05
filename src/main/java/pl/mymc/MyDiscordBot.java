@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 public class MyDiscordBot extends ListenerAdapter {
     private static final String CHANNEL_ID = "1234567890"; // Replace with your channel ID
-    private static final String token = "token";
+    private static final String token = "tokenn";
 
     public static void main(String[] args) {
         JDABuilder.createDefault(token)
