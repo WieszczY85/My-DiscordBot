@@ -3,7 +3,11 @@ package pl.mymc;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.UserSnowflake;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
+import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 
@@ -14,13 +18,22 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 public class MyDiscordBot extends ListenerAdapter {
-    private static final String CHANNEL_ID = "1234567890"; // Replace with your channel ID
-    private static final String token = "tokenn";
+    private static final String DELETE_CHANNEL_ID = "1258706318076809277"; // ID kanału do usuwania wiadomości
+    private static final String ROLE_ASSIGN_CHANNEL_ID = "798568822583197707"; // ID kanału do przydzielania roli
+    private static final String ROLE_ASSIGN_MESSAGE_ID = "1266347621270818948"; // ID wiadomości do przydzielania roli
+    private static final String ROLE_ID = "771003077771526164"; // ID roli do przydzielenia
+
+    private static final String SECOND_ROLE_ASSIGN_CHANNEL_ID = "771004333303005204"; // ID drugiego kanału do przydzielania roli
+    private static final String SECOND_ROLE_ASSIGN_MESSAGE_ID = "1266323773594931230"; // ID drugiej wiadomości do przydzielania roli
+    private static final String FIRST_REACTION_ROLE_ID = "798559833829015613"; // ID pierwszej roli do przydzielenia na drugim kanale
+    private static final String SECOND_REACTION_ROLE_ID = "798559842402435118"; // ID drugiej roli do przydzielenia na drugim kanale
+
+    private static final String token = "MTI1Nzc1MTE1NTQzMDI2NDk0NA.G7HUzt.FBBCeYrvvjO9CrXwO0mkuz7pLQ7t0ycTXlb9-o";
 
     public static void main(String[] args) {
         JDABuilder.createDefault(token)
                 .addEventListeners(new MyDiscordBot())
-                .enableIntents(GatewayIntent.MESSAGE_CONTENT)
+                .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MESSAGE_REACTIONS)
                 .build();
     }
 
@@ -32,7 +45,7 @@ public class MyDiscordBot extends ListenerAdapter {
             String channelId = event.getChannel().getId();
 
             // Usuwanie wiadomości tylko na wybranym kanale
-            if (channelId.equals(CHANNEL_ID)) {
+            if (channelId.equals(DELETE_CHANNEL_ID)) {
                 deleteMessageAfterDelay(message);
             }
 
@@ -43,6 +56,53 @@ public class MyDiscordBot extends ListenerAdapter {
 
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onMessageReactionAdd(MessageReactionAddEvent event) {
+        String messageId = event.getMessageId();
+        String channelId = event.getChannel().getId();
+
+        if (messageId.equals(ROLE_ASSIGN_MESSAGE_ID) && channelId.equals(ROLE_ASSIGN_CHANNEL_ID)) {
+            Role role = event.getGuild().getRoleById(ROLE_ID);
+            if (role != null) {
+                event.getGuild().addRoleToMember(UserSnowflake.fromId(event.getUserId()), role).queue();
+            }
+        } else if (messageId.equals(SECOND_ROLE_ASSIGN_MESSAGE_ID) && channelId.equals(SECOND_ROLE_ASSIGN_CHANNEL_ID)) {
+            Role roleToAssign = null;
+            String reactionEmote = event.getEmoji().getName();
+
+            if (reactionEmote.equals("🇵🇱")) {
+                roleToAssign = event.getGuild().getRoleById(FIRST_REACTION_ROLE_ID);
+            } else if (reactionEmote.equals("\uD83C\uDFF4\uDB40\uDC67\uDB40\uDC62\uDB40\uDC65\uDB40\uDC6E\uDB40\uDC67\uDB40\uDC7F")) { // England flag unicode sequence
+                roleToAssign = event.getGuild().getRoleById(SECOND_REACTION_ROLE_ID);
+            }
+
+            if (roleToAssign != null) {
+                event.getGuild().addRoleToMember(UserSnowflake.fromId(event.getUserId()), roleToAssign).queue();
+            }
+        }
+    }
+
+    @Override
+    public void onMessageReactionRemove(MessageReactionRemoveEvent event) {
+        String messageId = event.getMessageId();
+        String channelId = event.getChannel().getId();
+
+        if (messageId.equals(SECOND_ROLE_ASSIGN_MESSAGE_ID) && channelId.equals(SECOND_ROLE_ASSIGN_CHANNEL_ID)) {
+            Role roleToRemove = null;
+            String reactionEmote = event.getEmoji().getName();
+
+            if (reactionEmote.equals("🇵🇱")) {
+                roleToRemove = event.getGuild().getRoleById(FIRST_REACTION_ROLE_ID);
+            } else if (reactionEmote.equals("\uD83C\uDFF4\uDB40\uDC67\uDB40\uDC62\uDB40\uDC65\uDB40\uDC6E\uDB40\uDC67\uDB40\uDC7F")) { // England flag unicode sequence
+                roleToRemove = event.getGuild().getRoleById(SECOND_REACTION_ROLE_ID);
+            }
+
+            if (roleToRemove != null) {
+                event.getGuild().removeRoleFromMember(UserSnowflake.fromId(event.getUserId()), roleToRemove).queue();
+            }
         }
     }
 
@@ -57,33 +117,37 @@ public class MyDiscordBot extends ListenerAdapter {
         }
 
         // Obsługa komendy !ping
-        switch (content) {
-            case "!ping" -> event.getChannel().sendMessage("pongggg").queue(this::deleteMessageAfterDelayIfInChannel
-            );
-
+        switch (content.split(" ")[0]) {
+            case "!test" -> event.getChannel().sendMessage("Bot uruchomiony").queue(this::deleteMessageAfterDelayIfInChannel);
 
             // Obsługa komendy !update
             case "!update" -> {
                 boolean success = updateBot();
                 if (success) {
-                    event.getChannel().sendMessage("JAR file updated and server restarted successfully.").queue(this::deleteMessageAfterDelayIfInChannel
-                    );
+                    event.getChannel().sendMessage("JAR file updated and server restarted successfully.").queue(this::deleteMessageAfterDelayIfInChannel);
                 } else {
-                    event.getChannel().sendMessage("Failed to update JAR file.").queue(this::deleteMessageAfterDelayIfInChannel
-                    );
+                    event.getChannel().sendMessage("Failed to update JAR file.").queue(this::deleteMessageAfterDelayIfInChannel);
                 }
             }
 
             // Obsługa komendy !exit
             case "!exit" -> {
-                event.getChannel().sendMessage("Shutting down the bot...").queue(this::deleteMessageAfterDelayIfInChannel
-                );
+                event.getChannel().sendMessage("Shutting down the bot...").queue(this::deleteMessageAfterDelayIfInChannel);
                 System.exit(0); // Wyjście z aplikacji
             }
 
-
             // Obsługa komendy !komendy
             case "!komendy" -> sendCommandList(event);
+
+            // Obsługa komendy !say
+            case "!say" -> {
+                String messageToSay = content.substring("!say".length()).trim();
+                if (!messageToSay.isEmpty()) {
+                    event.getChannel().sendMessage(messageToSay).queue();
+                } else {
+                    event.getChannel().sendMessage("Użycie: !say <wiadomość>").queue(this::deleteMessageAfterDelayIfInChannel);
+                }
+            }
         }
     }
 
@@ -91,9 +155,10 @@ public class MyDiscordBot extends ListenerAdapter {
     private void sendCommandList(MessageReceivedEvent event) {
         String builder = """
                 **Lista komend:**
-                !ping - Wysyła wiadomość 'pongggg'.
+                !test - Wysyła wiadomość 'Bot uruchomiony'.
                 !update - Aktualizuje plik JAR.
                 !exit - Wyłącza bota.
+                !say <wiadomość> - Wysyła wiadomość jako bot.
                 """;
         event.getChannel().sendMessage(builder).queue(
                 sentMessage -> deleteMessageAfterDelayIfInChannel(sentMessage, 30)
@@ -117,7 +182,7 @@ public class MyDiscordBot extends ListenerAdapter {
 
     // Metoda usuwająca wiadomość po określonym czasie tylko na wybranym kanale
     private void deleteMessageAfterDelayIfInChannel(Message message, int delaySeconds) {
-        if (message.getChannel().getId().equals(CHANNEL_ID)) {
+        if (message.getChannel().getId().equals(DELETE_CHANNEL_ID)) {
             message.delete().queueAfter(delaySeconds, TimeUnit.SECONDS);
         }
     }
