@@ -18,7 +18,7 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 public class MyDiscordBot extends ListenerAdapter {
-    private static final String DELETE_CHANNEL_ID = "1258706318076809277"; // ID kanału do usuwania wiadomości
+    private static final String DELETE_CHANNEL_ID = "1259487263407210547"; // ID kanału do usuwania wiadomości
     private static final String ROLE_ASSIGN_CHANNEL_ID = "798568822583197707"; // ID kanału do przydzielania roli
     private static final String ROLE_ASSIGN_MESSAGE_ID = "1266347621270818948"; // ID wiadomości do przydzielania roli
     private static final String ROLE_ID = "771003077771526164"; // ID roli do przydzielenia
@@ -32,6 +32,7 @@ public class MyDiscordBot extends ListenerAdapter {
 
     public static void main(String[] args) {
         JDABuilder.createDefault(token)
+
                 .addEventListeners(new MyDiscordBot())
                 .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MESSAGE_REACTIONS)
                 .build();
@@ -172,12 +173,12 @@ public class MyDiscordBot extends ListenerAdapter {
 
     // Metoda usuwająca wiadomość po określonym czasie
     private void deleteMessageAfterDelay(Message message) {
-        message.delete().queueAfter(10, TimeUnit.SECONDS);
+        message.delete().queueAfter(172800, TimeUnit.SECONDS);
     }
 
     // Metoda usuwająca wiadomość po określonym czasie tylko na wybranym kanale
     private void deleteMessageAfterDelayIfInChannel(Message message) {
-        deleteMessageAfterDelayIfInChannel(message, 10);
+        deleteMessageAfterDelayIfInChannel(message, 172800);
     }
 
     // Metoda usuwająca wiadomość po określonym czasie tylko na wybranym kanale
@@ -207,7 +208,7 @@ public class MyDiscordBot extends ListenerAdapter {
             boolean checkForUpdates = true;
             boolean autoDownloadUpdates = true;
 
-            BotVersionChecker.checkVersion(botName, currentVersion, checkForUpdates, autoDownloadUpdates);
+
             return true;
         }
         return false;
