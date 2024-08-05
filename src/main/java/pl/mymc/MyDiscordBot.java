@@ -28,7 +28,7 @@ public class MyDiscordBot extends ListenerAdapter {
     private static final String FIRST_REACTION_ROLE_ID = "798559833829015613"; // ID pierwszej roli do przydzielenia na drugim kanale
     private static final String SECOND_REACTION_ROLE_ID = "798559842402435118"; // ID drugiej roli do przydzielenia na drugim kanale
 
-    private static final String token = "";
+    private static final String token = "x";
 
     public static void main(String[] args) {
         JDABuilder.createDefault(token)
